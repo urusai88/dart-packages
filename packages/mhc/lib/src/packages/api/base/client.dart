@@ -1,0 +1,3 @@
+class ServiceClient {
+  const ServiceClient();
+}

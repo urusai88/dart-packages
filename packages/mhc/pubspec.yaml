@@ -1,0 +1,29 @@
+name: mhc
+description: A sample command-line application.
+version: 0.0.1
+repository: https://github.com/urusai88/mhc
+
+environment:
+  sdk: ^3.2.0
+
+dependencies:
+  fast_immutable_collections: ^9.2.0
+  logging: ^1.2.0
+  riverpod: ^2.4.0
+  state_notifier: ^1.0.0
+  meta: ^1.10.0
+  collection: ^1.18.0
+  equatable: ^2.0.0
+  rxdart: ^0.27.0
+  async: ^2.11.0
+  time: ^2.1.0
+  hive: ^2.2.0
+  dio: ^5.4.0
+  http_parser: ^4.0.0
+  mime: ^1.0.0
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.24.0
+  mhc_dev:
+    path: ./../mhc_dev
