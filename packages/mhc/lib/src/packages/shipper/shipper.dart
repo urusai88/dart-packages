@@ -15,32 +15,31 @@ import 'shipper_load.dart';
 import 'shipper_options.dart';
 import 'shipper_state.dart';
 
-typedef UpdateExtraCallback<ExtraT> = ExtraT Function(ExtraT extra);
+typedef UpdateExtraCallback<EXTRA> = EXTRA Function(EXTRA extra);
 
-abstract class Shipper<ExtraT, ResultT,
-        EntryT extends ShipperEntryBase<ExtraT, ResultT, EntryT>>
-    extends StateNotifier<ShipperState<ExtraT, ResultT, EntryT>> {
+abstract class Shipper<EXTRA, R,
+        ENTRY extends ShipperEntryBase<EXTRA, R, ENTRY>>
+    extends StateNotifier<ShipperState<EXTRA, R, ENTRY>> {
   Shipper({
     required ShipperOptions options,
-    required ShipperDelegate<ExtraT, ResultT> delegate,
+    required ShipperDelegate<EXTRA, R> delegate,
   })  : _options = options,
         _delegate = delegate,
-        super(ShipperState<ExtraT, ResultT, EntryT>.empty());
+        super(ShipperState<EXTRA, R, ENTRY>.empty());
 
   final ShipperOptions _options;
-  final ShipperDelegate<ExtraT, ResultT> _delegate;
+  final ShipperDelegate<EXTRA, R> _delegate;
 
   final _logger = Logger('Shipper');
 
   final _controller =
-      StreamController<ShipperEvent<ExtraT, ResultT, EntryT>>.broadcast();
+      StreamController<ShipperEvent<EXTRA, R, ENTRY>>.broadcast();
 
-  Stream<ShipperEvent<ExtraT, ResultT, EntryT>> get events =>
-      _controller.stream;
+  Stream<ShipperEvent<EXTRA, R, ENTRY>> get events => _controller.stream;
 
   @override
   @protected
-  Stream<ShipperState<ExtraT, ResultT, EntryT>> get stream => super.stream;
+  Stream<ShipperState<EXTRA, R, ENTRY>> get stream => super.stream;
 
   @override
   void dispose() {
@@ -48,11 +47,11 @@ abstract class Shipper<ExtraT, ResultT,
     unawaited(_controller.close());
   }
 
-  List<ShipperEntryBase<ExtraT, ResultT, EntryT>> addToQueue(
-    Iterable<ShipperLoad<ExtraT>> files,
+  List<ShipperEntryBase<EXTRA, R, ENTRY>> addToQueue(
+    Iterable<ShipperLoad<EXTRA>> files,
   ) {
     _logger.info('${files.length} файлов добавлено в очередь');
-    final notifiers = <ShipperEntryBase<ExtraT, ResultT, EntryT>>[];
+    final notifiers = <ShipperEntryBase<EXTRA, R, ENTRY>>[];
     for (final file in files) {
       final entry = createEntry(
         id: state.id,
@@ -95,9 +94,9 @@ abstract class Shipper<ExtraT, ResultT,
     }
   }
 
-  EntryT? getEntry(int id) => state.entries[id];
+  ENTRY? getEntry(int id) => state.entries[id];
 
-  void updateExtra(int id, UpdateExtraCallback<ExtraT> fn) {
+  void updateExtra(int id, UpdateExtraCallback<EXTRA> fn) {
     final entry = getEntry(id);
     if (entry == null) {
       return;
@@ -109,7 +108,7 @@ abstract class Shipper<ExtraT, ResultT,
     );
   }
 
-  bool _willExceed(ShipperEntryBase<ExtraT, ResultT, EntryT> entry) {
+  bool _willExceed(ShipperEntryBase<EXTRA, R, ENTRY> entry) {
     if (_options.maxOneTimeProcessingBytes == null) {
       return false;
     }
@@ -137,7 +136,7 @@ abstract class Shipper<ExtraT, ResultT,
     _processQueue();
   }
 
-  Future<void> _processEntry(EntryT entry) async {
+  Future<void> _processEntry(ENTRY entry) async {
     _logger.fine('entry ${entry.id} processing');
     final splitterOutput = Output<StreamSplitter<Uint8List>>();
     state = state.copyWith(
@@ -178,7 +177,7 @@ abstract class Shipper<ExtraT, ResultT,
       final result = await _delegate.process(entry.load, entry.id, readStream);
       _reportStatus(entry.id, ShipperEntryStatus.completed(result));
       _controller.add(
-        ShipperEvent<ExtraT, ResultT, EntryT>.completed(
+        ShipperEvent<EXTRA, R, ENTRY>.completed(
           entry: entry,
           result: result,
         ),
@@ -189,7 +188,7 @@ abstract class Shipper<ExtraT, ResultT,
       _logger.warning('Блок загрузки', e, s);
       _reportStatus(entry.id, ShipperEntryStatus.failure(e, s));
       _controller.add(
-        ShipperEvent<ExtraT, ResultT, EntryT>.failure(entry: entry),
+        ShipperEvent<EXTRA, R, ENTRY>.failure(entry: entry),
       );
     } finally {
       state = state.modifyProcessingBytes(-entry.load.size);
@@ -197,7 +196,7 @@ abstract class Shipper<ExtraT, ResultT,
     }
   }
 
-  void _reportStatus(int id, ShipperEntryStatus<ResultT> status) {
+  void _reportStatus(int id, ShipperEntryStatus<R> status) {
     _logger.info('entry $id status => $status');
     state = state.copyWith(
       entries: state.entries.add(id, state.entries[id]!.withStatus(status)),
@@ -205,9 +204,9 @@ abstract class Shipper<ExtraT, ResultT,
   }
 
   @protected
-  EntryT createEntry({
+  ENTRY createEntry({
     required int id,
-    required ShipperLoad<ExtraT> load,
-    required ShipperEntryStatus<ResultT> status,
+    required ShipperLoad<EXTRA> load,
+    required ShipperEntryStatus<R> status,
   });
 }

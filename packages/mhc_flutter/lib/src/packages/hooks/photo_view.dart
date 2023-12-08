@@ -8,12 +8,14 @@ PhotoViewController usePhotoViewController({
   double? initialScale,
   List<Object?>? keys,
 }) =>
-    use(_PageViewControllerHook(
-      keys: keys,
-      initialPosition: initialPosition,
-      initialRotation: initialRotation,
-      initialScale: initialScale,
-    ));
+    use(
+      _PageViewControllerHook(
+        keys: keys,
+        initialPosition: initialPosition,
+        initialRotation: initialRotation,
+        initialScale: initialScale,
+      ),
+    );
 
 class _PageViewControllerHook extends Hook<PhotoViewController> {
   const _PageViewControllerHook({

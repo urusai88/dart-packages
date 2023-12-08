@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import '../../../api.dart';
-import '../../../core.dart';
-import '../../../storage.dart';
+import '../../../../../mhc.dart';
 
 typedef TokenKey = StorageKey<String>;
 
@@ -16,26 +14,27 @@ class TokenRefreshResult {
   final String refreshToken;
 }
 
-abstract class DioAuthInterceptor<RefreshTokenResultT, ErrorT, ExtraT>
-    extends Interceptor {
+abstract class DioAuthInterceptor<RR, ERR, EXTRA> extends Interceptor {
   const DioAuthInterceptor({required this.client});
 
-  final DioClient<ErrorT> client;
+  final DioClient<ERR> client;
 
-  Logger get _logger => Logger('DioAuthInterceptor');
+  Logger get _logger => Logger(loggerName);
+
+  String get loggerName => 'DioAuthInterceptor';
 
   TokenKey get accessTokenKey;
 
   TokenKey get refreshTokenKey;
 
-  bool tokenExpiredResolver(ErrorT error);
+  bool tokenExpiredResolver(ERR error);
 
-  Future<ServiceResponse<RefreshTokenResultT, ErrorT, ExtraT>> refreshJwt(
+  Future<ServiceResponse<RR, ERR, EXTRA>> refreshJwt(
     String refreshToken,
   );
 
   TokenRefreshResult getRefreshTokenResult(
-    ServiceResult<RefreshTokenResultT, ErrorT, ExtraT> result,
+    ServiceResult<RR, ERR, EXTRA> result,
   );
 
   @override
@@ -50,9 +49,10 @@ abstract class DioAuthInterceptor<RefreshTokenResultT, ErrorT, ExtraT>
 
     final extra = client.getExtra(options);
     if (!extra.ignoreAuth) {
-      final headers = options.headers;
-      headers[HttpHeaders.authorizationHeader] = accessToken;
-      options.headers = headers;
+      options.headers = {
+        ...options.headers,
+        HttpHeaders.authorizationHeader: accessToken,
+      };
     }
 
     return handler.next(options);
@@ -68,11 +68,11 @@ abstract class DioAuthInterceptor<RefreshTokenResultT, ErrorT, ExtraT>
       return handler.next(err);
     }
     _logger.info(
-      '400 error, response.data.runtimeType: ${response.data?.runtimeType}',
+      '400 error, response.data.runtimeType: ${_dataToString(response.data)}',
     );
     if (response.data case final JSON data) {
       try {
-        final error = client.factoryConfig.errorJsonFactory!(data);
+        final error = client.factoryConfig.errorGroup.json(data);
         if (tokenExpiredResolver(error)) {
           _logger.info('token expired');
           final newResponse =
@@ -97,11 +97,11 @@ abstract class DioAuthInterceptor<RefreshTokenResultT, ErrorT, ExtraT>
       return handler.next(response);
     }
     _logger.info(
-      '400 error, response.data.runtimeType: ${response.data?.runtimeType}',
+      '400 error, response.data.runtimeType: ${_dataToString(response.data)}',
     );
     if (response.data case final JSON data) {
       try {
-        final error = client.factoryConfig.errorJsonFactory!(data);
+        final error = client.factoryConfig.errorGroup.json(data);
         if (tokenExpiredResolver(error)) {
           _logger.info('token expired');
           response = await _refreshToken().then((_) => _restart(response));
@@ -122,7 +122,7 @@ abstract class DioAuthInterceptor<RefreshTokenResultT, ErrorT, ExtraT>
     }
 
     switch (await refreshJwt(refreshToken)) {
-      case final ServiceResult<RefreshTokenResultT, ErrorT, ExtraT> result:
+      case final ServiceResult<RR, ERR, EXTRA> result:
         _logger.info('refreshJwt: $result');
         final data = getRefreshTokenResult(result);
         await accessTokenKey.set(data.accessToken);
@@ -168,4 +168,7 @@ abstract class DioAuthInterceptor<RefreshTokenResultT, ErrorT, ExtraT>
       cancelToken: originalOptions.cancelToken,
     );
   }
+
+  static String _dataToString(dynamic data) =>
+      data == null ? 'Null' : '${data.runtimeType}';
 }

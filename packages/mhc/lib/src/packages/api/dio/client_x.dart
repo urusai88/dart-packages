@@ -1,7 +1,65 @@
+import 'dart:typed_data';
+
 import '../../api.dart';
 import '../../core.dart';
 
-extension DioClientX<ErrorT> on DioClient<ErrorT> {
+class DioServiceRequestBuilder<T, ERR> {
+  const DioServiceRequestBuilder._(
+    this._client,
+    this.path, {
+    required this.method,
+    this.data,
+    this.queryParameters,
+    this.options,
+    this.cancelToken,
+    this.onSendProgress,
+    this.onReceiveProgress,
+  });
+
+  final DioClient<ERR> _client;
+
+  final String path;
+  final String method;
+  final Object? data;
+  final JSON? queryParameters;
+  final Options? options;
+  final CancelToken? cancelToken;
+  final ProgressCallback? onSendProgress;
+  final ProgressCallback? onReceiveProgress;
+
+  Future<DioServiceResponse<R, ERR /*, DataT*/ >> _call<R, D>(
+    ResponseType responseType,
+    DioResponseTransformer<R, ERR, D> transformer,
+  ) =>
+      _client._request<R, D>(
+        path,
+        transformer,
+        data: data,
+        queryParameters: queryParameters,
+        options: DioClientX._checkOptions(
+          options: options,
+          method: method,
+          responseType: responseType,
+        ),
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      );
+
+  Future<DioServiceResponse<T, ERR /*, JSON*/ >> one() =>
+      _call<T, JSON>(ResponseType.json, _client.transformOne);
+
+  Future<DioServiceResponse<List<T>, ERR /*, List<dynamic>*/ >> many() =>
+      _call<List<T>, List<dynamic>>(ResponseType.json, _client.transformMany);
+
+  Future<DioServiceResponse<Uint8List, ERR /*, Uint8List*/ >> bytes() =>
+      _call(ResponseType.bytes, _client.transformBytes);
+
+  Future<DioServiceResponse<void, ERR /*, dynamic*/ >> zero() =>
+      _call(ResponseType.plain, _client.transformZero);
+}
+
+extension DioClientX<ERR> on DioClient<ERR> {
   static Response<T> castResponse<T>(Response<dynamic> response) {
     return Response<T>(
       data: response.data != null ? response.data as T : null,
@@ -15,23 +73,29 @@ extension DioClientX<ErrorT> on DioClient<ErrorT> {
     );
   }
 
-  static Options _checkOptions(String method, Options? options) =>
-      (options ?? Options())..method = method;
+  static Options _checkOptions({
+    Options? options,
+    required String method,
+    ResponseType? responseType,
+  }) =>
+      (options ?? Options()).copyWith(
+        method: method,
+        responseType: responseType,
+      );
 
-  Future<DioServiceResponse<ResultT, ErrorT, ResponseT>>
-      _request<ResultT, ResponseT>(
-    String path, {
+  Future<DioServiceResponse<R, ERR>> _request<R, D>(
+    String path,
+    DioResponseTransformer<R, ERR, D> transformer, {
     Object? data,
     JSON? queryParameters,
     CancelToken? cancelToken,
     Options? options,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
-    required DioResponseTransformer<ResultT, ErrorT, ResponseT> transformer,
   }) async {
     try {
       return await dio
-          .request<ResponseT>(
+          .request<D>(
             path,
             data: data,
             queryParameters: queryParameters,
@@ -52,7 +116,7 @@ extension DioClientX<ErrorT> on DioClient<ErrorT> {
     }
   }
 
-  Future<DioServiceResponse<ResultT, ErrorT, JSON>> getOne<ResultT>(
+  DioServiceRequestBuilder<R, ERR> get<R>(
     String path, {
     Object? data,
     JSON? queryParameters,
@@ -60,75 +124,39 @@ extension DioClientX<ErrorT> on DioClient<ErrorT> {
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
   }) =>
-      _request<ResultT, JSON>(
+      DioServiceRequestBuilder._(
+        this,
         path,
-        transformer: transformOne,
+        method: 'GET',
         data: data,
         queryParameters: queryParameters,
-        options: _checkOptions('GET', options),
+        options: options,
         cancelToken: cancelToken,
         onReceiveProgress: onReceiveProgress,
       );
 
-  Future<DioServiceResponse<List<ResultT>, ErrorT, List<dynamic>>>
-      getMany<ResultT>(
+  DioServiceRequestBuilder<R, ERR> post<R>(
     String path, {
     Object? data,
     JSON? queryParameters,
     Options? options,
     CancelToken? cancelToken,
     ProgressCallback? onReceiveProgress,
-  }) =>
-          _request<List<ResultT>, List<dynamic>>(
-            path,
-            transformer: transformMany<ResultT>,
-            data: data,
-            queryParameters: queryParameters,
-            options: _checkOptions('GET', options),
-            cancelToken: cancelToken,
-            onReceiveProgress: onReceiveProgress,
-          );
-
-  Future<DioServiceResponse<void, ErrorT, dynamic>> getZero(
-    String path, {
-    Object? data,
-    JSON? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-    ProgressCallback? onReceiveProgress,
-  }) =>
-      _request<void, dynamic>(
-        path,
-        transformer: transformZero,
-        data: data,
-        queryParameters: queryParameters,
-        options: _checkOptions('GET', options),
-        cancelToken: cancelToken,
-        onReceiveProgress: onReceiveProgress,
-      );
-
-  Future<DioServiceResponse<ResultT, ErrorT, JSON>> postOne<ResultT>(
-    String path, {
-    Object? data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
   }) =>
-      _request<ResultT, JSON>(
+      DioServiceRequestBuilder._(
+        this,
         path,
-        transformer: transformOne,
+        method: 'POST',
         data: data,
         queryParameters: queryParameters,
-        options: _checkOptions('POST', options),
+        options: options,
         cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
         onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
       );
 
-  Future<DioServiceResponse<List<ResultT>, ErrorT, List<dynamic>>>
-      postMany<ResultT>(
+  DioServiceRequestBuilder<R, ERR> put<R>(
     String path, {
     Object? data,
     JSON? queryParameters,
@@ -137,205 +165,53 @@ extension DioClientX<ErrorT> on DioClient<ErrorT> {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) =>
-          _request<List<ResultT>, List<dynamic>>(
-            path,
-            transformer: transformMany<ResultT>,
-            data: data,
-            queryParameters: queryParameters,
-            options: _checkOptions('POST', options),
-            cancelToken: cancelToken,
-            onSendProgress: onSendProgress,
-            onReceiveProgress: onReceiveProgress,
-          );
-
-  Future<DioServiceResponse<void, ErrorT, dynamic>> postZero(
-    String path, {
-    Object? data,
-    JSON? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-    ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
-  }) =>
-      _request<void, dynamic>(
+      DioServiceRequestBuilder._(
+        this,
         path,
-        transformer: transformZero,
+        method: 'PUT',
         data: data,
         queryParameters: queryParameters,
-        options: _checkOptions('POST', options),
+        options: options,
         cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
         onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
       );
 
-  Future<DioServiceResponse<ResultT, ErrorT, JSON>> putOne<ResultT>(
+  DioServiceRequestBuilder<R, ERR> patch<R>(
     String path, {
     Object? data,
-    Map<String, dynamic>? queryParameters,
+    JSON? queryParameters,
     Options? options,
     CancelToken? cancelToken,
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) =>
-      _request<ResultT, JSON>(
+      DioServiceRequestBuilder._(
+        this,
         path,
-        transformer: transformOne,
+        method: 'PATCH',
         data: data,
         queryParameters: queryParameters,
-        options: _checkOptions('PUT', options),
+        options: options,
         cancelToken: cancelToken,
+        onReceiveProgress: onReceiveProgress,
         onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
       );
 
-  Future<DioServiceResponse<List<ResultT>, ErrorT, List<dynamic>>>
-      putMany<ResultT>(
+  DioServiceRequestBuilder<R, ERR> delete<R>(
     String path, {
     Object? data,
     JSON? queryParameters,
     Options? options,
     CancelToken? cancelToken,
-    ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
   }) =>
-          _request<List<ResultT>, List<dynamic>>(
-            path,
-            transformer: transformMany<ResultT>,
-            data: data,
-            queryParameters: queryParameters,
-            options: _checkOptions('PUT', options),
-            cancelToken: cancelToken,
-            onSendProgress: onSendProgress,
-            onReceiveProgress: onReceiveProgress,
-          );
-
-  Future<DioServiceResponse<void, ErrorT, dynamic>> putZero(
-    String path, {
-    Object? data,
-    JSON? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-    ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
-  }) =>
-      _request<void, dynamic>(
+      DioServiceRequestBuilder._(
+        this,
         path,
-        transformer: transformZero,
+        method: 'DELETE',
         data: data,
         queryParameters: queryParameters,
-        options: _checkOptions('PUT', options),
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
-      );
-
-  Future<DioServiceResponse<ResultT, ErrorT, JSON>> patchOne<ResultT>(
-    String path, {
-    Object? data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-    ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
-  }) =>
-      _request<ResultT, JSON>(
-        path,
-        transformer: transformOne,
-        data: data,
-        queryParameters: queryParameters,
-        options: _checkOptions('PATCH', options),
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
-      );
-
-  Future<DioServiceResponse<List<ResultT>, ErrorT, List<dynamic>>>
-      patchMany<ResultT>(
-    String path, {
-    Object? data,
-    JSON? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-    ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
-  }) =>
-          _request<List<ResultT>, List<dynamic>>(
-            path,
-            transformer: transformMany<ResultT>,
-            data: data,
-            queryParameters: queryParameters,
-            options: _checkOptions('PATCH', options),
-            cancelToken: cancelToken,
-            onSendProgress: onSendProgress,
-            onReceiveProgress: onReceiveProgress,
-          );
-
-  Future<DioServiceResponse<void, ErrorT, dynamic>> patchZero(
-    String path, {
-    Object? data,
-    JSON? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-    ProgressCallback? onSendProgress,
-    ProgressCallback? onReceiveProgress,
-  }) =>
-      _request<void, dynamic>(
-        path,
-        transformer: transformZero,
-        data: data,
-        queryParameters: queryParameters,
-        options: _checkOptions('PATCH', options),
-        cancelToken: cancelToken,
-        onSendProgress: onSendProgress,
-        onReceiveProgress: onReceiveProgress,
-      );
-
-  Future<DioServiceResponse<ResultT, ErrorT, JSON>> deleteOne<ResultT>(
-    String path, {
-    Object? data,
-    Map<String, dynamic>? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) =>
-      _request<ResultT, JSON>(
-        path,
-        transformer: transformOne,
-        data: data,
-        queryParameters: queryParameters,
-        options: _checkOptions('DELETE', options),
-        cancelToken: cancelToken,
-      );
-
-  Future<DioServiceResponse<List<ResultT>, ErrorT, List<dynamic>>>
-      deleteMany<ResultT>(
-    String path, {
-    Object? data,
-    JSON? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) =>
-          _request<List<ResultT>, List<dynamic>>(
-            path,
-            transformer: transformMany<ResultT>,
-            data: data,
-            queryParameters: queryParameters,
-            options: _checkOptions('DELETE', options),
-            cancelToken: cancelToken,
-          );
-
-  Future<DioServiceResponse<void, ErrorT, dynamic>> deleteZero(
-    String path, {
-    Object? data,
-    JSON? queryParameters,
-    Options? options,
-    CancelToken? cancelToken,
-  }) =>
-      _request<void, dynamic>(
-        path,
-        transformer: transformZero,
-        data: data,
-        queryParameters: queryParameters,
-        options: _checkOptions('DELETE', options),
+        options: options,
         cancelToken: cancelToken,
       );
 }

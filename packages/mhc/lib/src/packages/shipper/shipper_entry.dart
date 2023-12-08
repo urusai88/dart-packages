@@ -1,8 +1,8 @@
 import 'shipper_entry_status.dart';
 import 'shipper_load.dart';
 
-abstract class ShipperEntryBase<ExtraT, ResultT,
-    EntryT extends ShipperEntryBase<ExtraT, ResultT, EntryT>> {
+abstract class ShipperEntryBase<EXTRA, R,
+    ENTRY extends ShipperEntryBase<EXTRA, R, ENTRY>> {
   const ShipperEntryBase({
     required this.id,
     required this.load,
@@ -11,9 +11,9 @@ abstract class ShipperEntryBase<ExtraT, ResultT,
 
   final int id;
 
-  final ShipperLoad<ExtraT> load;
+  final ShipperLoad<EXTRA> load;
 
-  final ShipperEntryStatus<ResultT> status;
+  final ShipperEntryStatus<R> status;
 
   bool get isCompleted => status is ShipperEntryStatusCompleted;
 
@@ -23,9 +23,9 @@ abstract class ShipperEntryBase<ExtraT, ResultT,
 
   bool get isFailure => status is ShipperEntryStatusFailure;
 
-  EntryT withStatus(ShipperEntryStatus<ResultT> status);
+  ENTRY withStatus(ShipperEntryStatus<R> status);
 
-  EntryT withLoad(ShipperLoad<ExtraT> load);
+  ENTRY withLoad(ShipperLoad<EXTRA> load);
 
-  EntryT withExtra(ExtraT extra);
+  ENTRY withExtra(EXTRA extra);
 }

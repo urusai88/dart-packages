@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:mhc/mhc.dart';
 import 'package:test/test.dart';
@@ -13,87 +14,60 @@ Future<void> main() async {
   setUpAll(() async => server = await starHttpServer());
   tearDownAll(() async => server = await stopHttpServer(server));
 
-  group('get one', () {
-    test('/todos/1, success', () async {
-      final future = todosService.getTodo(1);
-      expect(future, completes);
-      final value = await future;
-      expect(value, isA<MyServiceResult<Todo, JSON>>());
-      // final result = value as MyServiceResult<Todo, JSON>;
-      // expect(result.result.id, 1);
-    });
-
-    test('/todos/3, 404', () async {
-      final future = todosService.getTodo(3);
-      expect(future, completes);
-      final value = await future;
-      expect(value, isA<MyServiceError<Todo, JSON>>());
-      final result = value as MyServiceError<Todo, JSON>;
-      expect(result.extra.response, isNotNull);
-      expect(result.extra.response!.statusCode, 404);
-    });
-
-    test('/todos/1, wrong factory', () async {
-      expect(
-        todosService.wrongReturnType(1),
-        throwsA(
-          allOf([
-            isA<ClientError>(),
-            predicate<ClientError>(
-              (error) => error.type == ClientErrorType.middlewareError,
-            ),
-          ]),
+  group(
+    'one json',
+    () {
+      test(
+        '/todos/1, success',
+        () => expect(
+          todosService.todo(1),
+          completion(
+            isA<MyServiceResult<Todo /*, JSON*/ >>()
+                .having((r) => r.result, 'result', todos.whereId(1)),
+          ),
         ),
       );
-    });
 
-    test('/zero', () async {
-      expect(
-        todosService.emptyResponse(),
-        completion(isA<MyServiceResult<void, dynamic>>()),
-      );
-    });
+      test('/todos/3, failure 404', () async {
+        expect(
+          todosService.todo(3),
+          completion(
+            isA<MyServiceError<Todo /*, JSON*/ >>()
+                .having((e) => e.extra.response, 'response', isNotNull)
+                .having(
+                  (e) => e.extra.response?.statusCode,
+                  'statusCode',
+                  HttpStatus.notFound,
+                ),
+          ),
+        );
+      });
+    },
+  );
 
-    test('/422', () async {
-      expect(
-        todosService.validationError(),
+  group('many json', () {
+    test(
+      '/todos, success',
+      () => expect(
+        todosService.todos(),
         completion(
-          allOf([
-            isA<MyServiceError<void, dynamic>>(),
-            predicate<MyServiceError<void, dynamic>>(
-              (error) => error.error == 'validation error',
-            ),
-          ]),
+          isA<MyServiceResult<List<Todo> /*, List<dynamic>*/ >>()
+              .having((r) => r.result, 'result', unorderedMatches(todos)),
         ),
-      );
-    });
+      ),
+    );
+  });
 
-    test('/error_string', () async {
-      expect(
-        todosService.errorString(),
+  group('bytes', () {
+    test(
+      'bytes success',
+      () => expect(
+        todosService.bytes(),
         completion(
-          allOf([
-            isA<MyServiceError<void, dynamic>>(),
-            predicate<MyServiceError<void, dynamic>>(
-              (error) => error.error == 'error1',
-            ),
-          ]),
+          isA<MyServiceResult<Uint8List /*, Uint8List*/ >>()
+              .having((resp) => resp.result, 'bytes length', isNotEmpty),
         ),
-      );
-    });
-
-    test('/error_json', () async {
-      expect(
-        todosService.errorJson(),
-        completion(
-          allOf([
-            isA<MyServiceError<void, dynamic>>(),
-            predicate<MyServiceError<void, dynamic>>(
-              (error) => error.error == 'error1',
-            ),
-          ]),
-        ),
-      );
-    });
+      ),
+    );
   });
 }

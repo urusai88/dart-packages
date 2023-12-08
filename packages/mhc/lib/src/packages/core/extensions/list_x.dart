@@ -1,4 +1,4 @@
-import '../../core.dart';
+import '../../../../mhc.dart';
 
 export 'package:collection/collection.dart';
 
@@ -17,6 +17,10 @@ extension ListX<T> on List<T> {
     }
     return length > index;
   }
+
+  bool check<R>() => every((item) => item is R);
+
+  List<R>? castChecked<R>() => check<R>() ? List<R>.from(this) : null;
 }
 
 extension ListXHasId<H, T extends HasId<H>> on List<T> {

@@ -18,48 +18,35 @@ T? _findEntity<T extends HasId<int>>(Iterable<T> items, String idSegment) {
   return entity;
 }
 
+void _writeJson(HttpResponse response, dynamic data) {
+  response.headers.contentType = ContentType.json;
+  if (data != null) {
+    response.statusCode = HttpStatus.ok;
+    response.write(jsonEncode(data));
+  } else {
+    response.statusCode = HttpStatus.notFound;
+  }
+}
+
 Future<void> _listener(HttpRequest req) async {
-  final resp = req.response;
+  final response = req.response;
   final method = req.method;
   final path = req.uri.path;
   final segments = req.uri.pathSegments;
 
   switch (segments) {
     case ['todos', final idSegment]:
-      resp.headers.set(HttpHeaders.contentTypeHeader, '${ContentType.json}');
-      final todo = _findEntity(todos, idSegment);
-      if (todo == null) {
-        resp.statusCode = 404;
-        break;
-      }
-      resp.statusCode = 200;
-      resp.write(jsonEncode(todo.toJson()));
+      _writeJson(response, _findEntity(todos, idSegment));
+    case ['todos']:
+      _writeJson(response, todos.map((e) => e.toJson()).toList());
     case ['users', final idSegment]:
-      resp.headers.set(HttpHeaders.contentTypeHeader, '${ContentType.json}');
-      final user = _findEntity(users, idSegment);
-      if (user == null) {
-        resp.statusCode = 404;
-        break;
-      }
-      resp.statusCode = 200;
-      resp.write(jsonEncode(user.toJson()));
-    case ['zero']:
-      break;
-    case ['422']:
-      resp.headers.set(HttpHeaders.contentTypeHeader, '${ContentType.json}');
-      resp.statusCode = 422;
-      resp.write(jsonEncode({'message': 'validation error'}));
-    case ['error_string']:
-      resp.headers.set(HttpHeaders.contentTypeHeader, '${ContentType.json}');
-      resp.statusCode = 400;
-      resp.write(jsonEncode('error1'));
-    case ['error_json']:
-      resp.headers.set(HttpHeaders.contentTypeHeader, '${ContentType.json}');
-      resp.statusCode = 400;
-      resp.write(jsonEncode({'message': 'error1'}));
+      _writeJson(response, _findEntity(users, idSegment));
+    case ['bytes']:
+      response.headers.contentType = ContentType.binary;
+      response.write(jsonEncode(todos.map((e) => e.toJson()).toList()));
   }
 
-  await resp.close();
+  await response.close();
 }
 
 Future<HttpServer> starHttpServer() =>

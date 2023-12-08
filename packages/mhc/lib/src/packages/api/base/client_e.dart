@@ -19,7 +19,7 @@ class ClientException implements Exception {
 enum ClientErrorType {
   serviceUnavailable,
   middlewareError,
-  wrongConfiguration,
+  badConfig,
 }
 
 class ClientError implements Error {
@@ -28,20 +28,22 @@ class ClientError implements Error {
     this.stackTrace,
   });
 
-  const ClientError.serviceUnavailable()
-      : type = ClientErrorType.serviceUnavailable,
-        stackTrace = null;
+  const ClientError.serviceUnavailable({this.stackTrace})
+      : type = ClientErrorType.serviceUnavailable;
 
-  const ClientError.wrongConfiguration()
-      : type = ClientErrorType.wrongConfiguration,
-        stackTrace = null;
+  const ClientError.badConfig({this.stackTrace})
+      : type = ClientErrorType.badConfig;
 
-  const ClientError.middlewareError()
-      : type = ClientErrorType.middlewareError,
-        stackTrace = null;
+  const ClientError.middlewareError({this.stackTrace})
+      : type = ClientErrorType.middlewareError;
 
   final ClientErrorType type;
 
   @override
   final StackTrace? stackTrace;
+
+  @override
+  String toString() {
+    return '$type\n$stackTrace';
+  }
 }

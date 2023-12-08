@@ -5,19 +5,19 @@ import 'package:meta/meta.dart';
 
 import 'shipper_load.dart';
 
-abstract class ShipperDelegate<ExtraT, ResultT> {
+abstract class ShipperDelegate<EXTRA, R> {
   const ShipperDelegate();
 
-  Future<Stream<Uint8List>?> openCacheStream(ShipperLoad<ExtraT> load);
+  Future<Stream<Uint8List>?> openCacheStream(ShipperLoad<EXTRA> load);
 
-  Future<StreamSink<Uint8List>?> openCacheSink(ShipperLoad<ExtraT> load);
+  Future<StreamSink<Uint8List>?> openCacheSink(ShipperLoad<EXTRA> load);
 
-  Future<ResultT> process(
-    ShipperLoad<ExtraT> load,
+  Future<R> process(
+    ShipperLoad<EXTRA> load,
     int entryId,
     Stream<Uint8List> stream,
   );
 
   @protected
-  void updateExtra(ExtraT newExtra) {}
+  void updateExtra(EXTRA newExtra) {}
 }

@@ -1,32 +1,26 @@
-import 'package:fast_immutable_collections/fast_immutable_collections.dart';
+import '../../../../mhc.dart';
 
-import '../../api.dart';
-
-class FactoryGroup<ErrorT> {
+class FactoryGroup<ERR> {
   const FactoryGroup({
     required this.empty,
     required this.string,
     required this.json,
   });
 
-  final EmptyFactory<ErrorT> empty;
-  final StringFactory<ErrorT> string;
-  final JsonFactory<ErrorT> json;
+  final EmptyFactory<ERR> empty;
+  final StringFactory<ERR> string;
+  final JsonFactory<ERR> json;
 }
 
-class FactoryConfig<ErrorT> {
+class FactoryConfig<ERR> {
   FactoryConfig({required this.errorGroup});
 
   var _map =
       IMap<Type, JsonFactory<dynamic>>(const <Type, JsonFactory<dynamic>>{});
 
-  JsonFactory<ErrorT>? errorJsonFactory;
-  StringFactory<ErrorT>? errorStringFactory;
-  ListFactory<ErrorT, ErrorT>? errorListFactory;
-
   IMap<Type, JsonFactory<dynamic>> get map => _map;
 
-  FactoryGroup<ErrorT> errorGroup;
+  FactoryGroup<ERR> errorGroup;
 
   void add<T>(JsonFactory<T> factory) {
     _map = _map.add(T, factory);

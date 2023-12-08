@@ -1,8 +1,8 @@
-import 'client.dart';
+import '../../../../mhc.dart';
 
-class DioService<ErrorT> {
-  const DioService({required this.client, this.path = '/'});
+class DioService<E /*, ExtraT*/ >
+    extends BaseService<DioClient<E>, E, DioResponseExtra> {
+  const DioService({required super.client, this.path = '/'});
 
-  final DioClient<ErrorT> client;
   final String path;
 }

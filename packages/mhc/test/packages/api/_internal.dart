@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:mhc/mhc.dart';
 
 import '_entities.dart';
@@ -6,36 +8,27 @@ const serverPort = 9000;
 
 typedef ResponseError = String;
 
-typedef MyServiceResponse<R, DataT>
-    = DioServiceResponse<R, ResponseError, DataT>;
+typedef MyServiceResponse<R /*, DataT*/ >
+    = DioServiceResponse<R, ResponseError>;
 
-typedef MyServiceResult<R, DataT> = DioServiceResult<R, ResponseError, DataT>;
+typedef MyServiceResult<R /*, DataT*/ > = DioServiceResult<R, ResponseError>;
 
-typedef MyServiceError<R, DataT> = DioServiceError<R, ResponseError, DataT>;
+typedef MyServiceError<R /*, DataT*/ > = DioServiceError<R, ResponseError>;
 
-class TestDioService extends DioService<ResponseError> {
-  const TestDioService({required super.client});
+class DioTestService extends DioService<ResponseError> {
+  const DioTestService({required super.client});
 
-  Future<MyServiceResponse<Todo, JSON>> getTodo(int id) =>
-      client.getOne('/todos/$id');
+  Future<MyServiceResponse<Todo /*, JSON*/ >> todo(int id) =>
+      client.get<Todo>('/todos/$id').one();
 
-  Future<MyServiceResponse<List<Todo>, List<dynamic>>> listTodos() =>
-      client.getMany('/todos');
+  Future<MyServiceResponse<List<Todo> /*, List<dynamic>*/ >> todos() =>
+      client.get<Todo>('/todos').many();
 
-  Future<MyServiceResponse<User, JSON>> wrongReturnType(int id) =>
-      client.getOne('/todos/$id');
+  Future<MyServiceResponse<Todo /*, JSON*/ >> todoBadResponse(int id) =>
+      client.get<Todo>('/users/$id').one();
 
-  Future<MyServiceResponse<void, void>> emptyResponse() =>
-      client.getZero('/zero');
-
-  Future<MyServiceResponse<void, void>> validationError() =>
-      client.getZero('/422');
-
-  Future<MyServiceResponse<void, dynamic>> errorString() =>
-      client.getZero('/error_string');
-
-  Future<MyServiceResponse<void, dynamic>> errorJson() =>
-      client.getZero('/error_json');
+  Future<MyServiceResponse<Uint8List /*, Uint8List*/ >> bytes() =>
+      client.get<Uint8List>('/bytes').bytes();
 }
 
 final factoryConfiguration = FactoryConfig<ResponseError>(
@@ -51,11 +44,10 @@ final factoryConfiguration = FactoryConfig<ResponseError>(
 final dio = Dio(
   BaseOptions(baseUrl: 'http://127.0.0.1:$serverPort/'),
 );
-// ..interceptors.add(const DioLogInterceptor(debugMode: true))
 
 final client = DioClient<ResponseError>(
   dio: dio,
   factoryConfig: factoryConfiguration,
 );
 
-final todosService = TestDioService(client: client);
+final todosService = DioTestService(client: client);

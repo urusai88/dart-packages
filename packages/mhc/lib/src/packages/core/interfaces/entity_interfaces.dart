@@ -1,4 +1,4 @@
-import '../../core.dart';
+import '../../../../mhc.dart';
 
 abstract interface class HasId<T> {
   T get id;
