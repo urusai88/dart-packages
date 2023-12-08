@@ -6,8 +6,7 @@ typedef JsonFactory<T> = T Function(JSON json);
 typedef ListFactory<T, LT> = T Function(List<LT> list);
 
 typedef DioServiceResponse<R, ERR> = ServiceResponse<R, ERR, DioResponseExtra>;
-typedef DioServiceResult<R, ERR>
-    = ServiceResult<R, ERR, DioResponseExtraSuccess>;
+typedef DioServiceResult<R, ERR> = ServiceResult<R, ERR, DioResponseExtra>;
 typedef DioServiceError<R, ERR> = ServiceError<R, ERR, DioResponseExtra>;
 
 typedef DioResponseTransformer<R, ERR, D> = Future<DioServiceResponse<R, ERR>>
@@ -19,22 +18,26 @@ class DioRequestExtra {
   final bool ignoreAuth;
 }
 
-sealed class DioResponseExtra {
+/* sealed */
+class DioResponseExtra {
   const DioResponseExtra(this.response);
 
-  const factory DioResponseExtra.success(Response<dynamic>? response) =
-      DioResponseExtraSuccess;
-
-  const factory DioResponseExtra.failure(Response<dynamic>? response) =
-      DioResponseExtraFailure;
+  // const factory DioResponseExtra.success(Response<dynamic>? response) =
+  //     DioResponseExtraSuccess;
+  //
+  // const factory DioResponseExtra.failure(Response<dynamic>? response) =
+  //     DioResponseExtraFailure;
 
   final Response<dynamic>? response;
 }
 
-class DioResponseExtraSuccess extends DioResponseExtra {
-  const DioResponseExtraSuccess(super.response);
-}
+// class DioResponseExtraSuccess extends DioResponseExtra {
+//   const DioResponseExtraSuccess(super.response);
+// }
+//
+// class DioResponseExtraFailure extends DioResponseExtra {
+//   const DioResponseExtraFailure(super.response);
+// }
 
-class DioResponseExtraFailure extends DioResponseExtra {
-  const DioResponseExtraFailure(super.response);
-}
+typedef DioClientInterceptorBuilder<ERR, T extends DioClientInterceptor<ERR>>
+    = T Function(DioServiceClient<ERR> client);

@@ -40,18 +40,10 @@ final class ServiceResult<R, ERR, EXTRA>
   const ServiceResult({required super.extra, required this.result}) : super._();
 
   final R result;
-
-  ServiceResult<R1, ERR, EXTRA> withResult<R1>(
-    ResultBuilder<R, ERR, EXTRA, R1> builder,
-  ) =>
-      ServiceResult(extra: extra, result: builder(this));
 }
 
 final class ServiceError<R, ERR, EXTRA> extends ServiceResponse<R, ERR, EXTRA> {
-  const ServiceError({
-    required super.extra,
-    required this.error,
-  }) : super._();
+  const ServiceError({required super.extra, required this.error}) : super._();
 
   final ERR error;
 }

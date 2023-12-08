@@ -4,26 +4,24 @@ import '../../../../mhc.dart';
 
 export 'package:dio/dio.dart';
 
-class DioClient<ERR>
-    extends BaseServiceClient<ERR, DioResponseExtra/*<dynamic>*/ > {
-  const DioClient({required this.dio, required this.factoryConfig});
+export 'client_x.dart';
+
+const _extraKey = 'dio_client_extra';
+
+class DioServiceClient<ERR> extends BaseServiceClient<ERR, DioResponseExtra> {
+  const DioServiceClient({required this.dio, required this.factoryConfig});
 
   final Dio dio;
   final FactoryConfig<ERR> factoryConfig;
 
-  DioResponseExtraSuccess/*<DataT>*/ makeResponseExtraSuccess/*<DataT>*/(
-    Response<dynamic /*DataT*/ > response,
-  ) =>
-      DioResponseExtraSuccess/*<DataT>*/(response);
-
-  DioResponseExtraFailure/*<DataT>*/ makeResponseExtraFailure/*<DataT>*/(
+  DioResponseExtra makeResponseExtra(
     Response<dynamic> response,
   ) =>
-      DioResponseExtraFailure/*<DataT>*/(response);
+      DioResponseExtra(response);
 
-  DioRequestExtra getExtra(RequestOptions options) {
-    if (options.extra['dio_client_extra'] is DioRequestExtra) {
-      return options.extra['dio_client_extra'] as DioRequestExtra;
+  DioRequestExtra makeRequestExtra(RequestOptions options) {
+    if (options.extra[_extraKey] is DioRequestExtra) {
+      return options.extra[_extraKey] as DioRequestExtra;
     }
     return const DioRequestExtra();
   }
@@ -31,23 +29,24 @@ class DioClient<ERR>
   JsonFactory<T> _checkFactory<T>() {
     final factory = factoryConfig.get<T>();
     if (factory == null) {
-      throw const ClientError.badConfig();
+      throw ClientError.badConfig(
+        message: 'Отсутствует фабрика для $T',
+      );
     }
     return factory;
   }
 
-  Future<DioServiceResult<Uint8List, ERR /*, Uint8List*/ >> transformBytes(
+  Future<DioServiceResponse<Uint8List, ERR>> transformBytes(
     Response<Uint8List> response,
-  ) {
-    return Future.value(
-      DioServiceResult(
-        extra: makeResponseExtraSuccess(response),
-        result: response.data!,
-      ),
-    );
-  }
+  ) =>
+      Future.value(
+        DioServiceResponse.result(
+          extra: makeResponseExtra(response),
+          result: response.data!,
+        ),
+      );
 
-  Future<DioServiceResult<R, ERR /*, JSON*/ >> transformOne<R>(
+  Future<DioServiceResponse<R, ERR>> transformOne<R>(
     Response<JSON> response,
   ) {
     final factory = _checkFactory<R>();
@@ -58,8 +57,8 @@ class DioClient<ERR>
     final json = JSON.from(data);
     try {
       return Future.value(
-        DioServiceResult(
-          extra: makeResponseExtraSuccess(response),
+        DioServiceResponse.result(
+          extra: makeResponseExtra(response),
           result: factory(json),
         ),
       );
@@ -68,7 +67,7 @@ class DioClient<ERR>
     }
   }
 
-  Future<DioServiceResult<List<R>, ERR /*, List<dynamic>*/ >> transformMany<R>(
+  Future<DioServiceResponse<List<R>, ERR>> transformMany<R>(
     Response<List<dynamic>> response,
   ) {
     final factory = _checkFactory<R>();
@@ -81,8 +80,8 @@ class DioClient<ERR>
       final result = json.map(factory).toList();
 
       return Future.value(
-        DioServiceResult(
-          extra: makeResponseExtraSuccess(response),
+        DioServiceResponse.result(
+          extra: makeResponseExtra(response),
           result: result,
         ),
       );
@@ -91,12 +90,12 @@ class DioClient<ERR>
     }
   }
 
-  Future<DioServiceResult<void, ERR /*, dynamic*/ >> transformZero(
+  Future<DioServiceResponse<void, ERR>> transformZero(
     Response<dynamic> resp,
   ) =>
       Future.value(
-        DioServiceResult(
-          extra: makeResponseExtraSuccess(resp),
+        DioServiceResponse.result(
+          extra: makeResponseExtra(resp),
           result: null,
         ),
       );
@@ -118,5 +117,72 @@ class DioClient<ERR>
     } on Error catch (e, s) {
       throw ClientError.middlewareError(stackTrace: s);
     }
+  }
+
+  Future<DioServiceResponse<R, ERR>> request<R, D>(
+    String path,
+    DioResponseTransformer<R, ERR, D> transformer, {
+    Object? data,
+    JSON? queryParameters,
+    CancelToken? cancelToken,
+    Options? options,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+    DioRequestExtra? extra,
+  }) async {
+    extra ??= const DioRequestExtra();
+    try {
+      return await dio
+          .request<D>(
+            path,
+            data: data,
+            queryParameters: queryParameters,
+            cancelToken: cancelToken,
+            options: checkOptions(options: options, extra: extra),
+            onSendProgress: onSendProgress,
+            onReceiveProgress: onReceiveProgress,
+          )
+          .then(transformer);
+    } on DioException catch (e, s) {
+      if (e.type == DioExceptionType.badResponse) {
+        return DioServiceError(
+          extra: makeResponseExtra(e.response!),
+          error: transformError(e.response!),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  static Response<T> castResponse<T>(Response<dynamic> response) {
+    return Response<T>(
+      data: response.data != null ? response.data as T : null,
+      requestOptions: response.requestOptions,
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      isRedirect: response.isRedirect,
+      redirects: response.redirects,
+      extra: response.extra,
+      headers: response.headers,
+    );
+  }
+
+  static Options checkOptions({
+    Options? options,
+    String? method,
+    ResponseType? responseType,
+    DioRequestExtra? extra,
+  }) {
+    options ??= Options();
+    options = options.copyWith(method: method, responseType: responseType);
+    if (options.extra == null) {
+      options = options.copyWith(extra: const <String, dynamic>{});
+    }
+    if (options.extra!.containsKey(_extraKey)) {
+      options = options.copyWith(
+        extra: <String, dynamic>{...options.extra!, _extraKey: extra},
+      );
+    }
+    return options;
   }
 }

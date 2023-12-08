@@ -22,7 +22,7 @@ Future<void> main() async {
         () => expect(
           todosService.todo(1),
           completion(
-            isA<MyServiceResult<Todo /*, JSON*/ >>()
+            isA<MyServiceResult<Todo>>()
                 .having((r) => r.result, 'result', todos.whereId(1)),
           ),
         ),
@@ -32,7 +32,7 @@ Future<void> main() async {
         expect(
           todosService.todo(3),
           completion(
-            isA<MyServiceError<Todo /*, JSON*/ >>()
+            isA<MyServiceError<Todo>>()
                 .having((e) => e.extra.response, 'response', isNotNull)
                 .having(
                   (e) => e.extra.response?.statusCode,
@@ -51,7 +51,7 @@ Future<void> main() async {
       () => expect(
         todosService.todos(),
         completion(
-          isA<MyServiceResult<List<Todo> /*, List<dynamic>*/ >>()
+          isA<MyServiceResult<List<Todo>>>()
               .having((r) => r.result, 'result', unorderedMatches(todos)),
         ),
       ),
@@ -64,10 +64,18 @@ Future<void> main() async {
       () => expect(
         todosService.bytes(),
         completion(
-          isA<MyServiceResult<Uint8List /*, Uint8List*/ >>()
+          isA<MyServiceResult<Uint8List>>()
               .having((resp) => resp.result, 'bytes length', isNotEmpty),
         ),
       ),
+    );
+  });
+
+  group('zero', () {
+    test(
+      'zero success',
+      () =>
+          expect(todosService.zero(), completion(isA<MyServiceResult<void>>())),
     );
   });
 }

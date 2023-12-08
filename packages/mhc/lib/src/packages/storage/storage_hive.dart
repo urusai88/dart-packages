@@ -8,8 +8,7 @@ class StorageHive extends Storage {
   final Box<dynamic> box;
 
   @override
-  Future<bool> exists(String key) =>
-      Future<bool>.sync(() => box.containsKey(key));
+  Future<bool> exists(String key) => Future<bool>.value(box.containsKey(key));
 
   @override
   Future<T?> get<T>(String key, {T? defaultValue}) =>
@@ -19,8 +18,7 @@ class StorageHive extends Storage {
   Future<void> set<T>(String key, T value) => box.put(key, value);
 
   @override
-  Future<void> delete(String key) =>
-      Future<dynamic>.sync(() => box.delete(key));
+  Future<void> delete(String key) => box.delete(key);
 
   @override
   Stream<T?> watch<T>(String key) =>

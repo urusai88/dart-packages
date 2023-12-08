@@ -14,10 +14,8 @@ class TokenRefreshResult {
   final String refreshToken;
 }
 
-abstract class DioAuthInterceptor<RR, ERR, EXTRA> extends Interceptor {
-  const DioAuthInterceptor({required this.client});
-
-  final DioClient<ERR> client;
+abstract class DioAuthInterceptor<R, ERR> extends DioClientInterceptor<ERR> {
+  const DioAuthInterceptor({required super.client});
 
   Logger get _logger => Logger(loggerName);
 
@@ -29,12 +27,12 @@ abstract class DioAuthInterceptor<RR, ERR, EXTRA> extends Interceptor {
 
   bool tokenExpiredResolver(ERR error);
 
-  Future<ServiceResponse<RR, ERR, EXTRA>> refreshJwt(
+  Future<DioServiceResponse<R, ERR>> refreshJwt(
     String refreshToken,
   );
 
   TokenRefreshResult getRefreshTokenResult(
-    ServiceResult<RR, ERR, EXTRA> result,
+    DioServiceResult<R, ERR> result,
   );
 
   @override
@@ -47,7 +45,7 @@ abstract class DioAuthInterceptor<RR, ERR, EXTRA> extends Interceptor {
       return handler.next(options);
     }
 
-    final extra = client.getExtra(options);
+    final extra = client.makeRequestExtra(options);
     if (!extra.ignoreAuth) {
       options.headers = {
         ...options.headers,
@@ -122,12 +120,12 @@ abstract class DioAuthInterceptor<RR, ERR, EXTRA> extends Interceptor {
     }
 
     switch (await refreshJwt(refreshToken)) {
-      case final ServiceResult<RR, ERR, EXTRA> result:
+      case final DioServiceResult<R, ERR> result:
         _logger.info('refreshJwt: $result');
         final data = getRefreshTokenResult(result);
         await accessTokenKey.set(data.accessToken);
         await refreshTokenKey.set(data.refreshToken);
-      case final ServiceError<dynamic, dynamic, dynamic> error:
+      case final DioServiceError<dynamic, dynamic> error:
         _logger.info('refreshJwt: $error');
         await accessTokenKey.delete();
         await refreshTokenKey.delete();

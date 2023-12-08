@@ -8,27 +8,26 @@ const serverPort = 9000;
 
 typedef ResponseError = String;
 
-typedef MyServiceResponse<R /*, DataT*/ >
-    = DioServiceResponse<R, ResponseError>;
-
-typedef MyServiceResult<R /*, DataT*/ > = DioServiceResult<R, ResponseError>;
-
-typedef MyServiceError<R /*, DataT*/ > = DioServiceError<R, ResponseError>;
+typedef MyServiceResponse<R> = DioServiceResponse<R, ResponseError>;
+typedef MyServiceResult<R> = DioServiceResult<R, ResponseError>;
+typedef MyServiceError<R> = DioServiceError<R, ResponseError>;
 
 class DioTestService extends DioService<ResponseError> {
   const DioTestService({required super.client});
 
-  Future<MyServiceResponse<Todo /*, JSON*/ >> todo(int id) =>
+  Future<MyServiceResponse<Todo>> todo(int id) =>
       client.get<Todo>('/todos/$id').one();
 
-  Future<MyServiceResponse<List<Todo> /*, List<dynamic>*/ >> todos() =>
+  Future<MyServiceResponse<List<Todo>>> todos() =>
       client.get<Todo>('/todos').many();
 
-  Future<MyServiceResponse<Todo /*, JSON*/ >> todoBadResponse(int id) =>
+  Future<MyServiceResponse<Todo>> todoBadResponse(int id) =>
       client.get<Todo>('/users/$id').one();
 
-  Future<MyServiceResponse<Uint8List /*, Uint8List*/ >> bytes() =>
+  Future<MyServiceResponse<Uint8List>> bytes() =>
       client.get<Uint8List>('/bytes').bytes();
+
+  Future<MyServiceResponse<void>> zero() => client.get<void>('/todos').zero();
 }
 
 final factoryConfiguration = FactoryConfig<ResponseError>(
@@ -45,7 +44,7 @@ final dio = Dio(
   BaseOptions(baseUrl: 'http://127.0.0.1:$serverPort/'),
 );
 
-final client = DioClient<ResponseError>(
+final client = DioServiceClient<ResponseError>(
   dio: dio,
   factoryConfig: factoryConfiguration,
 );
