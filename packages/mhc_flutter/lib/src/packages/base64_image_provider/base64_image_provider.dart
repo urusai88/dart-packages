@@ -4,9 +4,10 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:mhc/mhc.dart' hide describeIdentity;
 
 @immutable
-class Base64Image extends ImageProvider<Base64Image> {
+class Base64Image extends ImageProvider<Base64Image> with EquatableMixin {
   const Base64Image({required this.base64, this.scale = 1});
 
   static final _cache = <String, Uint8List>{};
@@ -45,15 +46,5 @@ class Base64Image extends ImageProvider<Base64Image> {
   }
 
   @override
-  bool operator ==(Object other) {
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
-    return other is Base64Image &&
-        other.base64 == base64 &&
-        other.scale == scale;
-  }
-
-  @override
-  int get hashCode => Object.hash(base64, scale);
+  List<Object?> get props => [base64, scale];
 }

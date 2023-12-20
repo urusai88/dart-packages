@@ -81,17 +81,17 @@ abstract class Shipper<EXTRA, R,
     }
   }
 
-  void restartFailureEntries() {
-    restartFailureEntry(state.entriesFailure.map((e) => e.id));
-  }
+  void restartFailureEntries() =>
+      restartFailureEntry(state.entriesFailure.map((e) => e.id));
 
   void restartFailureEntry(Iterable<int> ids) {
-    if (ids.isNotEmpty) {
-      for (final id in ids) {
-        _reportStatus(id, const ShipperEntryStatus.inQueue());
-      }
-      _processQueue();
+    if (ids.isEmpty) {
+      return;
     }
+    for (final id in ids) {
+      _reportStatus(id, const ShipperEntryStatus.inQueue());
+    }
+    _processQueue();
   }
 
   ENTRY? getEntry(int id) => state.entries[id];

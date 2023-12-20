@@ -1,10 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import 'typedefs.dart';
+
 T useDisposableValue<T>({
   required ValueGetter<T> builder,
   required ValueSetter<T> dispose,
-  List<Object?>? keys,
+  HookKeys keys,
 }) =>
     use(_DisposableValueHook(keys: keys, builder: builder, dispose: dispose));
 

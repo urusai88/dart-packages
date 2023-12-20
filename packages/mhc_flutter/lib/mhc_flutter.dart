@@ -6,3 +6,4 @@ export 'src/packages/hooks.dart';
 export 'src/packages/popup.dart';
 export 'src/packages/processing.dart';
 export 'src/packages/resume_lock.dart';
+export 'src/packages/storage/secure.dart';

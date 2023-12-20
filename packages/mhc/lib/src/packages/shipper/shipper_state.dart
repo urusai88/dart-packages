@@ -27,16 +27,16 @@ class ShipperState<EXTRA, R, ENTRY extends ShipperEntryBase<EXTRA, R, ENTRY>> {
   final IMap<int, StreamSplitter<Uint8List>> splitters;
 
   Iterable<ENTRY> get entriesInQueue =>
-      entries.values.where((e) => e.status is ShipperEntryStatusInQueue);
+      entries.values.where((e) => e.status is ShipperEntryStatusInQueue<R>);
 
   Iterable<ENTRY> get entriesProcessing =>
-      entries.values.where((e) => e.status is ShipperEntryStatusProcessing);
+      entries.values.where((e) => e.status is ShipperEntryStatusProcessing<R>);
 
   Iterable<ENTRY> get entriesFailure =>
-      entries.values.where((e) => e.status is ShipperEntryStatusFailure);
+      entries.values.where((e) => e.status is ShipperEntryStatusFailure<R>);
 
   Iterable<ENTRY> get entriesCompleted =>
-      entries.values.where((e) => e.status is ShipperEntryStatusCompleted);
+      entries.values.where((e) => e.status is ShipperEntryStatusCompleted<R>);
 
   ShipperState<EXTRA, R, ENTRY> incrementId() => copyWith(id: id + 1);
 

@@ -28,5 +28,5 @@ class ClientError implements Error {
   final StackTrace? stackTrace;
 
   @override
-  String toString() => message ?? '$this';
+  String toString() => 'ClientError: \n$message\n$stackTrace';
 }

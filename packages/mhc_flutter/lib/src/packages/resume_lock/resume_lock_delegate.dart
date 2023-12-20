@@ -7,9 +7,9 @@ abstract class ResumeLockDelegate {
 
   Future<ResumeLockAction> action(BuildContext context);
 
-  void pause();
+  void onPaused();
 
-  void unlocked();
+  void onUnlocked();
 
   @protected
   ResumeLockAction doNone() => const ResumeLockAction.none();

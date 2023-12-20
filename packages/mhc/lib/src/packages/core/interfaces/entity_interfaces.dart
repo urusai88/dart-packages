@@ -8,6 +8,10 @@ abstract interface class HasName<T> {
   T get name;
 }
 
+abstract interface class HasCreatedAt {
+  DateTime get createdAt;
+}
+
 abstract interface class JSONSerializable {
   JSON toJson();
 }

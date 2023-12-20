@@ -10,12 +10,6 @@ export 'resume_lock_delegate.dart';
 
 typedef LockerRouteBuilder<T> = Route<T> Function(Widget child);
 
-abstract interface class ResumeLockState {
-  void lock();
-
-  void unlock();
-}
-
 class ResumeLock extends StatefulWidget {
   const ResumeLock({
     super.key,
@@ -34,15 +28,13 @@ class ResumeLock extends StatefulWidget {
   final Widget child;
 
   @override
-  State<ResumeLock> createState() => _ResumeLockState();
+  ResumeLockState createState() => ResumeLockState();
 
   static ResumeLockState of(BuildContext context) =>
-      context.findAncestorStateOfType<_ResumeLockState>()!;
+      context.findAncestorStateOfType<ResumeLockState>()!;
 }
 
-class _ResumeLockState extends State<ResumeLock>
-    with WidgetsBindingObserver
-    implements ResumeLockState {
+class ResumeLockState extends State<ResumeLock> with WidgetsBindingObserver {
   var _locked = false;
 
   NavigatorState? get navigator => widget.navigatorKey.currentState;
@@ -63,7 +55,7 @@ class _ResumeLockState extends State<ResumeLock>
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.paused:
-        widget.delegate.pause();
+        widget.delegate.onPaused();
       case AppLifecycleState.resumed:
         switch (await widget.delegate.action(context)) {
           case ResumeLockActionNone():
@@ -75,7 +67,6 @@ class _ResumeLockState extends State<ResumeLock>
     }
   }
 
-  @override
   void lock() {
     if (_locked || navigator == null) {
       return;
@@ -87,14 +78,13 @@ class _ResumeLockState extends State<ResumeLock>
     unawaited(navigator!.push(route));
   }
 
-  @override
   void unlock() {
     if (!_locked || navigator == null) {
       return;
     }
     setState(() => _locked = false);
     navigator!.pop();
-    widget.delegate.unlocked();
+    widget.delegate.onUnlocked();
   }
 
   @override

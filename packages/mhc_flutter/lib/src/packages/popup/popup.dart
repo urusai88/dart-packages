@@ -29,13 +29,13 @@ Widget fadeTransitionBuilder(
 Future<T?> showPopup<T>({
   required BuildContext context,
   required GlobalKey objectKey,
-  required WidgetBuilder builder,
   RouteTransitionsBuilder transitionsBuilder = fadeTransitionBuilder,
   required PopupPositionDelegate positionDelegate,
   Color? barrierColor = const Color(0x00000000),
   String? barrierLabel,
   bool barrierDismissible = true,
   bool useRootNavigator = true,
+  required WidgetBuilder builder,
 }) async {
   final overlay = Navigator.of(context).overlay;
   assert(

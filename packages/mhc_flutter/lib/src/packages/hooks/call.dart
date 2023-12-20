@@ -1,16 +1,15 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import 'typedefs.dart';
+
 typedef CallFunction = dynamic Function();
 
-void useCall(CallFunction function, [List<Object?>? keys]) =>
+void useCall(CallFunction function, [HookKeys keys]) =>
     _CallHook(keys: keys, function: function);
 
 class _CallHook extends Hook<void> {
-  const _CallHook({
-    super.keys,
-    required this.function,
-  });
+  const _CallHook({super.keys, required this.function});
 
   final CallFunction function;
 

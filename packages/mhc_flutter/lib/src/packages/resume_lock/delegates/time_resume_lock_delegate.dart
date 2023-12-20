@@ -21,12 +21,8 @@ abstract class TimeResumeLockDelegate extends ResumeLockDelegate {
   }
 
   @override
-  void pause() {
-    _pauseTime = DateTime.now();
-  }
+  void onPaused() => _pauseTime = DateTime.now();
 
   @override
-  void unlocked() {
-    _pauseTime = null;
-  }
+  void onUnlocked() => _pauseTime = null;
 }

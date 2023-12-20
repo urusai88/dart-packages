@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import 'typedefs.dart';
+
 LockedTimerController useLockedTimer({
   required Duration regularTimeout,
   Duration? initialTimeout,
   Duration? updateInterval,
-  List<Object?>? keys,
+  HookKeys keys,
 }) =>
     use(
       _LockedTimerHook(
@@ -18,16 +20,6 @@ LockedTimerController useLockedTimer({
         updateInterval: updateInterval,
       ),
     );
-
-class LockedTimerController {
-  const LockedTimerController._(this._state);
-
-  final _LockedTimerState _state;
-
-  Duration? get remains => _state._remains;
-
-  void resetTimer([Duration? duration]) => _state._resetTimer(duration);
-}
 
 class _LockedTimerHook extends Hook<LockedTimerController> {
   const _LockedTimerHook({
@@ -42,10 +34,10 @@ class _LockedTimerHook extends Hook<LockedTimerController> {
   final Duration updateInterval;
 
   @override
-  _LockedTimerState createState() => _LockedTimerState();
+  _LockedTimerHookState createState() => _LockedTimerHookState();
 }
 
-class _LockedTimerState
+class _LockedTimerHookState
     extends HookState<LockedTimerController, _LockedTimerHook> {
   late LockedTimerController _controller;
   late Timer _timer;
@@ -111,4 +103,14 @@ class _LockedTimerState
     properties.add(DiagnosticsProperty<DateTime>('endTime', _endTime));
     properties.add(DiagnosticsProperty<Duration>('remains', _remains));
   }
+}
+
+class LockedTimerController {
+  const LockedTimerController._(this._state);
+
+  final _LockedTimerHookState _state;
+
+  Duration? get remains => _state._remains;
+
+  void resetTimer([Duration? duration]) => _state._resetTimer(duration);
 }

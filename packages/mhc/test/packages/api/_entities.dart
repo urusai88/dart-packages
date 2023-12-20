@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:mhc/mhc.dart';
 
 class User with EquatableMixin implements HasId<int>, HasName<String> {
@@ -20,10 +19,7 @@ class User with EquatableMixin implements HasId<int>, HasName<String> {
 }
 
 class Todo with EquatableMixin implements HasId<int> {
-  const Todo({
-    required this.id,
-    required this.userId,
-  });
+  const Todo({required this.id, required this.userId});
 
   Todo.fromJson(JSON json)
       : id = json['id'] as int,

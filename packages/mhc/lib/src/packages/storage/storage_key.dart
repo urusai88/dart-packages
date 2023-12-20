@@ -1,7 +1,7 @@
 part of 'storage.dart';
 
 @immutable
-class StorageKey<T> {
+class StorageKey<T> extends Equatable {
   const StorageKey(this.key, this._storage);
 
   final String key;
@@ -19,9 +19,5 @@ class StorageKey<T> {
   Stream<T?> watch() => _storage.watch<T>(key);
 
   @override
-  int get hashCode => Object.hash(key, _storage);
-
-  @override
-  bool operator ==(Object other) =>
-      other is StorageKey<T> && other.key == key && other._storage == _storage;
+  List<Object?> get props => [key, _storage];
 }

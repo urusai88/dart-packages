@@ -5,6 +5,10 @@ import 'order_notifier.dart';
 class OrderState<P> extends Equatable {
   const OrderState({this.property, this.direction, this.search = ''});
 
+  OrderState.key(OrderKey<P> key, [this.search = ''])
+      : property = key.property,
+        direction = key.direction;
+
   const OrderState.desc({this.property, this.search = ''})
       : direction = orderDesc;
 

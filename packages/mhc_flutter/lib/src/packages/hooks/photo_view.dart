@@ -2,11 +2,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:pdfx/pdfx.dart';
 
+import 'typedefs.dart';
+
 PhotoViewController usePhotoViewController({
   Offset initialPosition = Offset.zero,
   double initialRotation = 0,
   double? initialScale,
-  List<Object?>? keys,
+  HookKeys keys,
 }) =>
     use(
       _PageViewControllerHook(
