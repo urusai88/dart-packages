@@ -1,5 +1,3 @@
-import '../../../../mhc.dart';
-
 export 'package:collection/collection.dart';
 
 extension ListX<T> on List<T> {
@@ -21,14 +19,4 @@ extension ListX<T> on List<T> {
   bool check<R>() => every((item) => item is R);
 
   List<R>? castChecked<R>() => check<R>() ? List<R>.from(this) : null;
-}
-
-extension ListXHasId<H, T extends HasId<H>> on List<T> {
-  bool hasId(H id) => containsWhere((e) => e.id == id);
-
-  T whereId(H id) => firstWhere((e) => e.id == id);
-
-  T? whereIdOrNull(H id) => firstWhereOrNull((e) => e.id == id);
-
-  void removeWhereId(H id) => removeWhere((e) => e.id == id);
 }

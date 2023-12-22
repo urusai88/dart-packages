@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:mhc/mhc.dart';
 import 'package:test/test.dart';
 
 import '_entities.dart';
@@ -22,8 +21,11 @@ Future<void> main() async {
         () => expect(
           todosService.todo(1),
           completion(
-            isA<MyServiceResult<Todo>>()
-                .having((r) => r.result, 'result', todos.whereId(1)),
+            isA<MyServiceResult<Todo>>().having(
+              (r) => r.result,
+              'result',
+              todos.where((e) => e.id == 1),
+            ),
           ),
         ),
       );

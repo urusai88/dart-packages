@@ -11,7 +11,7 @@ T? _findEntity<T extends HasId<int>>(Iterable<T> items, String idSegment) {
   if (id == null) {
     return null;
   }
-  final entity = ListXHasId<int, T>(items.toList()).whereIdOrNull(id);
+  final entity = items.toList().firstWhereOrNull((e) => e.id == id);
   if (entity == null) {
     return null;
   }

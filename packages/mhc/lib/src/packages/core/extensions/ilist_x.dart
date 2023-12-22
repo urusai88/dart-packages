@@ -15,9 +15,3 @@ extension IListX<T> on IList<T> {
     return length > index;
   }
 }
-
-extension IListXHasId<H, T extends HasId<H>> on IList<T> {
-  bool hasId(H id) => containsWhere((e) => e.id == id);
-
-  IList<T> removeWhereId(H id) => removeWhere((e) => e.id == id);
-}
