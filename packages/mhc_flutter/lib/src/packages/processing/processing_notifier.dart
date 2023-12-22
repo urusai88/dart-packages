@@ -1,6 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod/riverpod.dart';
 
+final processingProvider = NotifierProvider.autoDispose
+    .family<ProcessingNotifier, bool, String>(ProcessingNotifier.new);
+
 typedef ProcessingProvider
     = AutoDisposeFamilyNotifierProvider<ProcessingNotifier, bool, String>;
 
