@@ -14,6 +14,7 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   riverpod: ^2.4.0
   flutter_hooks: ^0.20.0
+  riverpod_annotation: ^2.3.0
   meta: ^1.10.0
   mhc:
     path: ./../mhc
@@ -27,6 +28,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  build_runner: ^2.3.0
+  riverpod_generator: ^2.3.0
   mhc_dev:
     path: ./../mhc_dev
 

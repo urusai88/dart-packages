@@ -5,6 +5,11 @@ import 'package:meta/meta.dart';
 
 part 'storage_key.dart';
 
+typedef StorageKeyBuilder<T> = StorageKey<T> Function(
+  String key,
+  Storage storage,
+);
+
 abstract class Storage {
   Storage();
 
@@ -17,8 +22,14 @@ abstract class Storage {
   }
 
   @protected
-  StorageKey<T> key<T>(String key) =>
-      _keys.putIfAbsent(key, () => StorageKey<T>(key, this)) as StorageKey<T>;
+  K keyCustom<T, K extends StorageKey<T>>(
+    String key,
+    StorageKeyBuilder<T> keyBuilder,
+  ) =>
+      _keys.putIfAbsent(key, () => keyBuilder(key, this)) as K;
+
+  @protected
+  StorageKey<T> key<T>(String key) => keyCustom(key, defaultKeyBuilder<T>);
 
   @protected
   Future<bool> exists(String key);
@@ -34,4 +45,7 @@ abstract class Storage {
 
   @protected
   Stream<T?> watch<T>(String key);
+
+  static StorageKey<T> defaultKeyBuilder<T>(String key, Storage storage) =>
+      StorageKey<T>(key, storage);
 }

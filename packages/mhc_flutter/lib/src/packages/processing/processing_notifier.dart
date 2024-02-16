@@ -1,13 +1,10 @@
 import 'package:flutter/foundation.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final processingProvider = NotifierProvider.autoDispose
-    .family<ProcessingNotifier, bool, String>(ProcessingNotifier.new);
+part 'processing_notifier.g.dart';
 
-typedef ProcessingProvider
-    = AutoDisposeFamilyNotifierProvider<ProcessingNotifier, bool, String>;
-
-class ProcessingNotifier extends AutoDisposeFamilyNotifier<bool, String> {
+@Riverpod()
+class Processing extends _$Processing {
   @override
   bool build(String arg) => false;
 
@@ -28,7 +25,7 @@ class ProcessingNotifier extends AutoDisposeFamilyNotifier<bool, String> {
   }
 
   /// Позволяет вернуть значение.
-  /// Рроверку на текущее состояние необходимо делать вручную
+  /// Проверку на текущее состояние необходимо делать вручную
   Future<T> processManual<T>(AsyncValueGetter<T> fn) async {
     try {
       start();

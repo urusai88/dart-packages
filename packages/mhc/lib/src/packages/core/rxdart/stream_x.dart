@@ -3,14 +3,16 @@ import 'dart:async';
 import 'package:riverpod/riverpod.dart';
 import 'package:rxdart/rxdart.dart';
 
-typedef Listener<E> = void Function(E event);
-typedef Where<E> = bool Function(E event);
-typedef CompositionMaker<E> = Iterable<StreamSubscription<dynamic>> Function(
-  Stream<E> stream,
-);
+typedef StreamXListener<E> = void Function(E event);
+typedef StreamXWhere<E> = bool Function(E event);
+typedef StreamXCompositionMaker<E> = Iterable<StreamSubscription<dynamic>>
+    Function(Stream<E> stream);
 
 extension StreamX<T> on Stream<T> {
-  StreamSubscription<E> on<E>(Listener<E> listener, {Where<E>? where}) {
+  StreamSubscription<E> on<E>(
+    StreamXListener<E> listener, {
+    StreamXWhere<E>? where,
+  }) {
     var stream = whereType<E>();
     if (where != null) {
       stream = stream.where(where);
@@ -20,7 +22,7 @@ extension StreamX<T> on Stream<T> {
 
   CompositeSubscription makeCompositeSubscription(
     Ref ref,
-    CompositionMaker<T> compositionMaker,
+    StreamXCompositionMaker<T> compositionMaker,
   ) {
     final composition = CompositeSubscription();
     compositionMaker(this).forEach(composition.add);

@@ -25,6 +25,9 @@ class OrderState<P> extends Equatable {
   final OrderDirection? direction;
   final String search;
 
+  OrderKey<P>? get key =>
+      property != null ? OrderKey(property!, direction) : null;
+
   OrderState<P> copyWith({
     P? property,
     OrderDirection? direction,

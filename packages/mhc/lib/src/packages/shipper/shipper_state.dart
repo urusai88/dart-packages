@@ -8,10 +8,10 @@ import 'shipper_entry_status.dart';
 
 class ShipperState<EXTRA, R, ENTRY extends ShipperEntryBase<EXTRA, R, ENTRY>> {
   const ShipperState({
-    this.id = 1,
-    this.processingBytes = 0,
     required this.entries,
     required this.splitters,
+    this.id = 1,
+    this.processingBytes = 0,
   });
 
   ShipperState.empty()

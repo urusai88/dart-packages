@@ -1,9 +1,9 @@
 import '../resume_lock_delegate.dart';
 
 abstract class TimeResumeLockDelegate extends ResumeLockDelegate {
-  TimeResumeLockDelegate({required this.durationBeforeLock});
+  TimeResumeLockDelegate({required this.lockTimeout});
 
-  final Duration durationBeforeLock;
+  final Duration lockTimeout;
 
   DateTime? _pauseTime;
 
@@ -11,7 +11,7 @@ abstract class TimeResumeLockDelegate extends ResumeLockDelegate {
     if (_pauseTime == null) {
       return false;
     }
-    final shouldLockAt = _pauseTime!.add(durationBeforeLock);
+    final shouldLockAt = _pauseTime!.add(lockTimeout);
     final should = DateTime.now().isAfter(shouldLockAt);
     if (should) {
       return true;

@@ -15,3 +15,9 @@ abstract interface class HasCreatedAt {
 abstract interface class JSONSerializable {
   JSON toJson();
 }
+
+abstract interface class HasIntId extends HasId<int> {}
+
+abstract mixin class HasStringName implements HasName<String> {
+  String get normalizedName => name.trim().toLowerCase();
+}
