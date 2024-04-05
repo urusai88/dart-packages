@@ -28,4 +28,8 @@ abstract class ShipperEntryBase<EXTRA, R,
   ENTRY withLoad(ShipperLoad<EXTRA> load);
 
   ENTRY withExtra(EXTRA extra);
+
+  Future<void> completed() async {}
+
+  Future<void> cancelled() async {}
 }

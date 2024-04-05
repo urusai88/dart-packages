@@ -73,11 +73,15 @@ abstract class Shipper<EXTRA, R,
   Future<void> removeFailureEntry(Iterable<int> ids) async {
     for (final id in ids) {
       final splitter = state.splitters[id];
+      final entry = state.entries[id];
       if (splitter != null) {
         await splitter.close();
         state = state.copyWith(splitters: state.splitters.remove(id));
       }
-      state = state.copyWith(entries: state.entries.remove(id));
+      if (entry != null) {
+        await entry.cancelled();
+        state = state.copyWith(entries: state.entries.remove(id));
+      }
     }
   }
 
@@ -183,6 +187,7 @@ abstract class Shipper<EXTRA, R,
         ),
       );
       await splitter.close();
+      await entry.completed();
       state = state.copyWith(splitters: state.splitters.remove(entry.id));
     } catch (e, s) {
       _logger.warning('Блок загрузки', e, s);
