@@ -24,7 +24,6 @@ analyzer:
     public_member_api_docs: ignore
     sort_pub_dependencies: ignore
     unreachable_from_main: ignore
-    unused_catch_stack: ignore
     unused_element: ignore
     unused_local_variable: ignore
     avoid_unused_constructor_parameters: ignore
@@ -50,6 +49,8 @@ custom_lint:
 
 linter:
   rules:
+    - invalid_runtime_check_with_js_interop_types
+    - missing_code_block_language_in_doc_comment
     - always_declare_return_types
     - always_put_control_body_on_new_line
     - always_put_required_named_parameters_first
