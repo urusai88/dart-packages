@@ -8,7 +8,7 @@ analyzer:
     strict-inference: true
     strict-raw-types: true
   errors:
-    always_put_required_named_parameters_first: ignore
+    # always_put_required_named_parameters_first: ignore
     avoid_annotating_with_dynamic: ignore
     avoid_catches_without_on_clauses: ignore
     avoid_multiple_declarations_per_line: ignore
@@ -17,11 +17,10 @@ analyzer:
     diagnostic_describe_all_properties: ignore
     do_not_use_environment: ignore
     lines_longer_than_80_chars: ignore
-    one_member_abstracts: ignore
+    # one_member_abstracts: ignore
     parameter_assignments: ignore
     prefer_asserts_with_message: ignore
     prefer_expression_function_bodies: ignore
-    public_member_api_docs: ignore
     sort_pub_dependencies: ignore
     unreachable_from_main: ignore
     unused_element: ignore
@@ -53,7 +52,7 @@ linter:
     - missing_code_block_language_in_doc_comment
     - always_declare_return_types
     - always_put_control_body_on_new_line
-    - always_put_required_named_parameters_first
+    # - always_put_required_named_parameters_first
     - annotate_overrides
     - annotate_redeclares
     - avoid_annotating_with_dynamic
@@ -153,7 +152,7 @@ linter:
     - null_check_on_nullable_type_parameter
     - null_closures
     - omit_local_variable_types
-    - one_member_abstracts
+    # - one_member_abstracts
     - only_throw_errors
     - overridden_fields
     - package_api_docs
@@ -198,7 +197,7 @@ linter:
     - prefer_typing_uninitialized_variables
     - prefer_void_to_null
     - provide_deprecation_message
-    - public_member_api_docs
+    # - public_member_api_docs
     - recursive_getters
     - require_trailing_commas
     - secure_pubspec_urls
