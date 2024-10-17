@@ -31,6 +31,7 @@ analyzer:
 
 custom_lint:
   rules:
+    - use_truncating_division
     - missing_provider_scope
     - provider_dependencies
     - scoped_providers_should_specify_dependencies
